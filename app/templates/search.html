@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Search Results:</h1>
+    <!-- show filtered notes -->
+    {% if notes is not none %}
+        {% for note in notes %}
+            {% include 'includes/_note.html' %}
+        {% endfor %}
+    {% else %}
+        <p>No notes satisify the key word</p>
+    {% endif %}
+
+    <a href="{{ url_for('main.group', groupname=session['groupname']) }}">Back</a>
+{% endblock %}

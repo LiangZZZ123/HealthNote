@@ -1,0 +1,15 @@
+<tr>
+    <td><img src={{ note.user.avatar(36)}}></td>
+    <td>{{ note.user.username|title }}</td>
+    <td>{{ note.timestamp }}</td>
+    <td>{{ note.notetype|title }}</td>
+    <!-- action for delete, link to "delete_note(noteid)" method in routes.py by URL -->
+    <td>
+        <form action="{{ url_for('main.delete_note', noteid=note.noteid) }}" method="post">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="submit" value="Delete" >
+        </form>
+    </td>
+    <div>{{ note.notetext }}</div>
+</tr>
+<hr>
