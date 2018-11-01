@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div>
+    <h1>Manage your group below:</h1>
+    <p>Group is the core role of our service, every one has his default group upon registration.</p>
+    <P>As an elderly, the default group will be the group you work with,
+        you can add/delete your group members here. Once add a member, you grant
+        him/her the right to scheduling appointment and leaving notes for you.</p>
+    <P>As a family member/health aide, you have to be added to the elderly's group first, you are granted
+        to switch between different groups, make appointment, and leave notes for the elderly.</P>
+    <hr>
+
+    <p>Messages of Group Management show below:</p>
+    {% if current_user.messages.first() is not none %}
+        {% for message in current_user.messages %}
+        {{ message.messagetext }}
+        <form action="{{ url_for('managegroup.agreemessage', messageid=message.messageid) }}" method="post">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="submit" value="Agree">
+        </form>
+        <form action="{{ url_for('managegroup.disagreemessage', messageid=message.messageid) }}" method="post">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="submit" value="Disagree">
+        </form>
+        {% endfor %}
+    {% else %}
+        <p><b>No new message to process!</b></p>
+    {% endif %}
+    <hr>
+
+    <form action="" method="post">
+        {{ addUserForm.hidden_tag() }}
+        {{ addUserForm.adduser.label }}<br>
+        {{ addUserForm.adduser }}<br>
+
+        {{ addUserForm.submit() }}
+    </form>
+
+    <form action="" method="post">
+        {{ dropUserForm.hidden_tag()}}
+        {{ dropUserForm.dropuser.label }}<br>
+        {{ dropUserForm.dropuser }}<br>
+
+        {{ dropUserForm.submit() }}
+    </form>
+    <hr>
+
+    <form action="" method="post">
+        {{ addGroupForm.hidden_tag() }}
+        {{ addGroupForm.addgroupadm.label }}<br>
+        {{ addGroupForm.addgroupadm }}<br>
+
+        {{ addGroupForm.submit() }}
+    </form>
+
+    <form action="" method="post">
+        {{ dropUserForm.hidden_tag()}}
+        {{ leaveGroupForm.leavegroup.label }}<br>
+        {{ leaveGroupForm.leavegroup }}<br>
+
+        {{ leaveGroupForm.submit() }}
+    </form>
+
+</div>
+
+{% endblock %}

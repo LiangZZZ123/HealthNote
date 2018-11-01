@@ -2,13 +2,13 @@ from flask import request
 from flask_wtf import FlaskForm
 from wtforms import Form, StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField
 from wtforms_components import TimeField
-from wtforms.validators import *
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 from app.models import User
 
 # due to a natural defect of wt-form, add non-select check for wt-form selectfield
 def myvalidate(form, field):
     if field.data == "--":
-        raise ValidationError("Sorry, You have to choose one from the dropdown list")
+        raise ValidationError("Sorry, You have to choose one from the dropdown list.")
 
 
 class SwitchGroupForm(FlaskForm):
@@ -19,9 +19,8 @@ class SwitchGroupForm(FlaskForm):
 
 class AddNoteForm(FlaskForm):
     notetype = SelectField('Nature of note',  validators=[DataRequired(), myvalidate],
-                           choices=[('--', '--'), ('diet', 'diet'), ('exercise', 'exercise'),
-                                    ('social', 'social'),
-                                    ('others', 'others')], default='--')
+                           choices=[], default='--')
+    
     notetext = TextAreaField('Text of note', validators=[Length(min=1)])
     submit = SubmitField('Confirm')
 

@@ -1,6 +1,6 @@
 # Define sql OEM syntax, do any SQL table creation/alternation in this file
 # format: table name are captalized
-from datetime import datetime
+from datetime import datetime, date
 from hashlib import md5
 from time import time
 from flask import current_app
@@ -61,17 +61,15 @@ def load_user(userid):
     return User.query.get(int(userid))
 
 
-# "grouping" is an association table, for add how many people to your group
+# "group_has_user" is an association table, for add how many people to your group
 # "groups" is the relationship() on User side, for that user added by how many groups
 # "users" is the relationship() on Group side, for that group has how many users
 # 'user_id' includes all users,  'group_id' includes all groups
 # use "following.c.follower_id" to access
 # ---Attention: in windows10 mysql, all table names aren't captalized!!!---
-grouping = db.Table('groupuser',
-                    db.Column('userid', db.Integer,
-                              db.ForeignKey('user.userid')),
-                    db.Column('groupid', db.Integer,
-                              db.ForeignKey('group.groupid'))
+group_has_user = db.Table('group_has_user',
+                    db.Column('userid', db.Integer, db.ForeignKey('user.userid')),
+                    db.Column('groupid', db.Integer, db.ForeignKey('group.groupid'))
                     )
 
 # integrate userControl and UserDbManagement into User class
@@ -86,14 +84,12 @@ class User(UserMixin, db.Model):
     usertype = db.Column(db.String(64))
     realname = db.Column(db.String(64))
     # many-many with class Group, a dict that store groups(type:objects) a user is in
-    groups = db.relationship('Group', secondary=grouping, back_populates="users",
+    groups = db.relationship('Group', secondary=group_has_user, back_populates="users",
                              lazy='dynamic')
-    # one-many with class Note
+    # one-many with class Note, Message, Tasks
     notes = db.relationship('Note', back_populates="user", lazy='dynamic')
-
-    # one-many with class Message
-    messages = db.relationship(
-        'Message', back_populates="user", lazy='dynamic')
+    messages = db.relationship('Message', back_populates="user", lazy='dynamic')
+    tasks = db.relationship('Task', back_populates="user", lazy='dynamic')
 
     # build the picture for user
     def avatar(self, size):
@@ -148,15 +144,15 @@ class User(UserMixin, db.Model):
 
     def in_groups(self):
         groups_in = (Group.query
-                     .join(grouping, (Group.groupid == grouping.c.groupid))
-                     .filter(grouping.c.userid == self.userid)
+                     .join(group_has_user, (Group.groupid == group_has_user.c.groupid))
+                     .filter(group_has_user.c.userid == self.userid)
                      )
         return groups_in
 
     def users_in_mygroup(self):
         mygroup_users = (User.query
-                         .join(grouping, (User.userid == grouping.c.userid))
-                         .filter(grouping.c.groupid == self.default_group().groupid)
+                         .join(group_has_user, (User.userid == group_has_user.c.userid))
+                         .filter(group_has_user.c.groupid == self.default_group().groupid)
                          )
         return mygroup_users
 
@@ -179,17 +175,17 @@ class Group(db.Model):
     groupname = db.Column(db.String(64), index=True, unique=True)
     admin = db.Column(db.String(64), index=True, unique=True)
     # many-many with class User
-    users = db.relationship('User', secondary=grouping,
+    users = db.relationship('User', secondary=group_has_user,
                             back_populates='groups', lazy='dynamic')
-    # one-many with class Visit,Doctor
+    # one-many with class Visit,Doctor,Note,Case
     visits = db.relationship('Visit', back_populates='group', lazy='dynamic')
     doctors = db.relationship('Doctor', back_populates='group', lazy='dynamic')
-    # one-many with class Note
     notes = db.relationship('Note', back_populates='group', lazy='dynamic')
+    cases = db.relationship('Case', back_populates='group', lazy='dynamic')
 
     # user doing manipulation on his default group
     def isjoined_user(self, user):
-        return(self.users.filter(grouping.c.userid == user.userid)).count() > 0
+        return(self.users.filter(group_has_user.c.userid == user.userid)).count() > 0
 
     def add_member(self, user):
         if not self.isjoined_user(user):
@@ -208,40 +204,48 @@ class Note(SearchableMixin, db.Model):
     __tablename__ = 'note'
     __searchable__ = ['notetext']
     noteid = db.Column(db.Integer, primary_key=True)
-    notetype = db.Column(db.String(64))
-    notetext = db.Column(db.String(1024))
+    notetext = db.Column(db.String(2048))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    endtag = db.Column(db.Boolean)
+    lasteditor = db.Column(db.String(64))
+    lastedittime = db.Column(db.DateTime)
+
+    caseid = db.Column(db.Integer, db.ForeignKey('case.caseid'))
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
     groupid = db.Column(db.Integer, db.ForeignKey('group.groupid'))
+    notetypeid = db.Column(db.Integer, db.ForeignKey('notetype.notetypeid'))
 
+    case = db.relationship('Case', back_populates='notes')
     user = db.relationship('User', back_populates='notes')
     group = db.relationship('Group', back_populates='notes')
+    notetype = db.relationship('NoteType', back_populates='notes')
 
+class NoteType(db.Model):
+    __tablename__ = 'notetype'
+    notetypeid = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(128))
 
-class Condition(db.Model):
-    __tablename__ = 'condition'
-    conditionid = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(128))
+    notes = db.relationship('Note', back_populates='notetype')
 
 
 class Visit(db.Model):
     __tablename__ = 'visit'
     visitid = db.Column(db.Integer, primary_key=True)
-    doctorname = db.Column(db.String(64))
     date = db.Column(db.String(64))
     time = db.Column(db.String(64))
-    nature = db.Column(db.String(128))
+    visittext = db.Column(db.String(512))
+    
     groupid = db.Column(db.Integer, db.ForeignKey('group.groupid'))
-    doctorid = db.Column(db.Integer, db.ForeignKey('doctor.doctorid'))
+    caseid = db.Column(db.Integer, db.ForeignKey('case.caseid'))
 
     group = db.relationship('Group', back_populates='visits')
-    doctor = db.relationship('Doctor', back_populates='visits')
+    case = db.relationship('Case', back_populates='visits')
 
 
 class Doctor(db.Model):
     __tablename__ = 'doctor'
     doctorid = db.Column(db.Integer, primary_key=True)
-    doctorname = db.Column(db.String(64))
+    doctorname = db.Column(db.String(64), unique=True, index=True)
     phone = db.Column(db.String(64))
     specialty = db.Column(db.String(64))
     officename = db.Column(db.String(64))
@@ -249,14 +253,79 @@ class Doctor(db.Model):
     address2 = db.Column(db.String(64))
     city = db.Column(db.String(64))
     zipcode = db.Column(db.String(32))
-    groupid = db.Column(db.Integer, db.ForeignKey('group.groupid'))
 
-    # one-many with class Visit
-    visits = db.relationship('Visit', back_populates='doctor', lazy='dynamic')
+    groupid = db.Column(db.Integer, db.ForeignKey('group.groupid'))
+    caseid = db.Column(db.Integer, db.ForeignKey('case.caseid'))
 
     group = db.relationship('Group', back_populates='doctors')
+    case = db.relationship('Case', back_populates='doctors')
 
     def doctors_in_thisgroup(thisgroup):
         thisgroup_doctors = Doctor.query.filter(
             Doctor.groupid == thisgroup.groupid)
         return thisgroup_doctors
+
+
+# ------------------------------------------------------------------------------
+# Association tables for case-condition, case-task
+case_has_condition = db.Table('case_has_condition',
+                    db.Column('caseid', db.Integer, db.ForeignKey('case.caseid')),
+                    db.Column('conditionid', db.Integer, db.ForeignKey('condition.conditionid'))
+                    )
+
+case_has_task = db.Table('case_has_task',
+                    db.Column('caseid', db.Integer, db.ForeignKey('case.caseid')),
+                    db.Column('taskid', db.Integer, db.ForeignKey('task.taskid'))
+                    )
+
+class Case(db.Model):
+    __tablename__ ='case'   
+    caseid = db.Column(db.Integer, primary_key=True)
+    casename = db.Column(db.String(128), unique=True, index=True)
+    casetext = db.Column(db.String(2048))
+    startday = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    endday = db.Column(db.DateTime, index=True)
+    endtag = db.Column(db.Boolean)
+
+    # many-one with class Group
+    groupid = db.Column(db.Integer, db.ForeignKey('group.groupid'))    
+
+    group = db.relationship('Group', back_populates='cases')
+
+    # one-many with class Visit,Doctor,Note
+    visits = db.relationship('Visit', back_populates='case', lazy='dynamic')
+    doctors = db.relationship('Doctor', back_populates='case', lazy='dynamic')
+    notes = db.relationship('Note', back_populates='case', lazy='dynamic')
+
+    # many-many with class Condition, Task
+    conditions = db.relationship('Condition', secondary=case_has_condition, 
+                                back_populates="cases", lazy='dynamic')
+    tasks = db.relationship('Task', secondary=case_has_task, 
+                                back_populates="cases", lazy='dynamic')
+
+
+class Condition(db.Model):
+    __tablename__ = 'condition'
+    conditionid = db.Column(db.Integer, primary_key=True)
+    conditiontext = db.Column(db.String(128))
+
+    # many-many with class Case
+    cases = db.relationship('Case', secondary=case_has_condition,
+                                 back_populates="conditions", lazy='dynamic')
+
+
+class Task(db.Model):
+    __tablename__ = 'task'
+    taskid = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    tasktext = db.Column(db.String(128))
+
+    # one-many with class User
+    userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
+
+    user = db.relationship('User', back_populates='tasks')
+
+    # many-many with class Case
+    cases = db.relationship('Case', secondary=case_has_task,
+                            back_populates="tasks", lazy='dynamic')
+

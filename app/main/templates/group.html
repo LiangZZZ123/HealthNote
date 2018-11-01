@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{%block content %}
+    <h1>Welcome to your Care Group</h1>
+
+    <!-- switchGroupForm  -->
+  <form method="post">
+    {{ switchGroupForm.hidden_tag() }}
+    {{ switchGroupForm.group.label }}
+    {{ switchGroupForm.group}}
+    {{ switchGroupForm.submit() }}
+  </form>
+  <hr>
+
+  <!-- group admin (the cared) info -->
+  <p>Current group: <b>{{group.groupname}}</b></p>
+  <p>This group is for the service of: </p>
+  <img src="{{ cared.avatar(64)}}" />
+  <p>{{group.admin|title}}</p>
+  <hr>
+
+  <!-- group member info -->
+  <p>Group members:</p>
+  {% for user in group.users | sort(attribute='username')%}
+    <p><img src="{{ user.avatar(32) }}"> {{user.username|title}}</p>
+  {% endfor %}
+  <hr>
+
+
+  
+  
+  <!-- ------------------------------------------------------------------------------------- -->
+  <!-- addNoteForm -->
+  <!-- 你看看能不能对wtf quick_form 的模板直接进行修改，不行的话用更下面的那一段   -->
+  <div class="row">
+    <div class="col-md-4">
+      {{ wtf.quick_form(addNoteForm) }}
+    </div>
+  </div>
+  <hr>
+ 
+  <!-- <form action="" method="post">
+    {{ addNoteForm.hidden_tag() }}
+    {{ addNoteForm.notetype.label}}
+    {{ addNoteForm.notetype }}
+    {% for error in addNoteForm.notetype.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    <p>{{ addNoteForm.notetext }}</p>
+    {% for error in addNoteForm.notetext.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    {{ addNoteForm.submit() }}
+  </form>
+  <hr> -->
+<!-- ------------------------------------------------------------------------------ -->
+
+
+<!-- show filtered notes -->
+  {% if notes is not none %}
+    {% for note in notes %}
+      {% include 'includes/_note.html' %}
+    {% endfor %}
+  {% else %}
+    <p>No notes here!</p>
+  {% endif %}
+  <hr>
+
+  {% endblock %}

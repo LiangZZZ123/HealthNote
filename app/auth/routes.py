@@ -14,7 +14,7 @@ def login():
 
     current_app.logger.info('here')
     if current_user.is_authenticated:
-        return redirect(url_for('group', groupname=current_user.default_group().groupname))
+        return redirect(url_for('main.group', groupname=current_user.default_group().groupname))
     form = LoginForm()
     if form.validate_on_submit():
         # first() return the user object if exists, or return None, compare to all()

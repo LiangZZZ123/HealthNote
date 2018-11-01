@@ -1,15 +1,23 @@
+<!-- every html file that uses this _note.html needed a 'note' variable specified  -->
 <tr>
     <td><img src={{ note.user.avatar(36)}}></td>
     <td>{{ note.user.username|title }}</td>
     <td>{{ note.timestamp }}</td>
-    <td>{{ note.notetype|title }}</td>
+    <td><b>{{ note.notetype.type }}</b></td>
+
+    <!-- action for edit, link to editnote.html -->
+    <!-- <td><a href="edit_note/{{note.noteid}}" class="#">Edit</a></td> -->
+    <td><a href="{{ url_for('main.edit_note', noteid=note.noteid) }}" class="#">Edit</a></td>
     <!-- action for delete, link to "delete_note(noteid)" method in routes.py by URL -->
     <td>
         <form action="{{ url_for('main.delete_note', noteid=note.noteid) }}" method="post">
             <input type="hidden" name="_method" value="DELETE">
-            <input type="submit" value="Delete" >
+            <input type="submit" value="Delete" class="#">
         </form>
     </td>
     <div>{{ note.notetext }}</div>
+    {% if note.lasteditor != "" %}
+        <b>Last edited by {{ note.lasteditor|title}} at {{ note.lastedittime }}</b>
+    {% endif %}
 </tr>
 <hr>

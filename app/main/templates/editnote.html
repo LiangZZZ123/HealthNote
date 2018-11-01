@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content%}
+
+<div class="row">
+    <div class="col-md-4">
+        {{ wtf.quick_form(form) }}
+    </div>
+</div>
+
+<!-- <form action="" method="post">
+    {{ form.hidden_tag() }}
+    {{ form.notetype.label}}
+    {{ form.notetype }}
+    {% for error in form.notetype.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    <p>{{ form.notetext }}</p>
+    {% for error in form.notetext.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    {{ form.submit() }}
+  </form>
+  <hr> -->
+
+<a href="{{ url_for('main.group', groupname=session['groupname']) }}">Back</a>
+
+{% endblock %}

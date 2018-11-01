@@ -6,11 +6,15 @@
     Please login below
     {% else %}
     <!-- //everytime back to 'group' page, will show the default group info, not good -->
-    <a href="{{ url_for('main.group', groupname=current_user.default_group().groupname) }}">CareGroup</a>
-    <a href="{{ url_for('managegroup.managegroup') }}">GroupManagement</a>
-    <a href="{{ url_for('auth.logout') }}">Logout</a>
+    <a href="{{ url_for('main.group', groupname=session['groupname']) }}"> CareGroup </a>
+    <a href="{{ url_for('managecase.managecase') }}"> CaseManagement </a>
+    <a href="{{ url_for('managegroup.managegroup') }}"> GroupManagement </a>
+    <a href="{{ url_for('auth.logout') }}"> Logout </a>
+
     <p>Current user: {{current_user.username|title}} <img src="{{ current_user.avatar(20)}}" /></p>
-    <p>Current group: {{session['groupname']|title}}</p>
+    
+
+    
     {% endif %}
 </div>
 <!-- a horizontal break line -->
