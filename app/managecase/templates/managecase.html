@@ -2,18 +2,12 @@
 
 {% block content %}
 
-<!-- group admin (the cared) info -->
-<p>Current group: <b>{{group.groupname}}</b></p>
-<p>This group is for the service of: </p>
-<img src="{{ cared.avatar(64)}}" />
-<p>{{group.admin|title}}</p>
-<hr>
 
 {% if group.cases.first() is none %}
     <a href="{{ url_for('managecase.addcase') }}">Create a new case</a>
 
 {% else %}
-    <h1>Manage cases of this group below:</h1>
+    <h1>Manage cases of {{ session['eldername']|title }}s' group below:</h1>
 
     <p>When you create a case, you are not necessary to add all doctor info(only doctor name is needed).</p>
     <p>You can complete the rest info after determining which doctor will take your case</p>
@@ -33,13 +27,20 @@
 
         <p><b>Case Name: {{ case.casename }}</b></p>
         <p>Doctor Name: {{ case.doctors.first().doctorname }}</p>
+        <p>Start at: {{ case.startday }}</p>
+        <p>End at: {{ case.endday if case.endday != none else "Still in process" }}</p>
         <p>Chronic Condition Tags:
             {% for condition in case.conditions %}
                 {{ condition.conditiontext }}
             {% endfor %}
         </p>
-        <p><a href="#">  Explore details  </a></p>
-        <p><a href="#">  End this case  </a></p>
+        <p><a href="{{ url_for('managecase.showcase', caseid=case.caseid) }}">  Explore details  </a></p>
+        
+        {% if case.endtag == False %}
+            <p><a href="{{ url_for('managecase.endcase', caseid=case.caseid) }}">  End this case  </a></p>
+        {% else %}
+            <p><b>This case has been closed</b></p>
+        {% endif %}
         <hr>
     {% endfor %}
         

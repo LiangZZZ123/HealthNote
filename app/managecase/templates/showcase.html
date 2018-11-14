@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content%}
+<h1>Below are the details of case <b>{{case.casename}}</b></h1>
+
+<h3>Doctor</h3>
+{% for doctor in case.doctors %}
+    <p>Doctor name: {{ doctor.doctorname|title }}</p>
+    <p>Phone: {{ doctor.phone }}</p>
+    <p>Speciality: {{ doctor.specialty }}</p>
+    <p>Officename: {{ doctor.officename }}</p>
+    <p>Addr1: {{ doctor.address1 }}</p>
+    <p>Addr2: {{ doctor.address2 }}</p>
+    <p>City: {{ doctor.city }}</p>
+    <p>zipcode: {{ doctor.zipcode }}</p>
+    
+    <a href="#">Edit</a>
+    <hr>
+{% endfor %}
+<hr>
+
+
+<h3>Notes</h3>
+{% for note in case.notes %}
+    {% include 'includes/_note.html' %}
+{% else %}
+    <p>No notes assigned for this case!</p>
+{% endfor %}
+<hr>
+
+
+<h3>Appointments</h3>
+{% for visit in case.visits | sort(attribute='date') %}
+    <p>Date: {{ visit.date }}; Time: {{ visit.time }}</p>
+    <p>Memo: {{ visit.visittext }}</p>
+    <hr>
+
+{% endfor %}
+<hr>
+
+
+{% endblock %}

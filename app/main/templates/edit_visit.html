@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content%}
+
+<h1>Edit this visit below:</h1>
+<h4>This appointment was scheduled on {{visit.date}} {{visit.time}}</h4>
+
+<div class="row">
+    <div class="col-md-4">
+        {{ wtf.quick_form(form) }}
+    </div>
+</div>
+
+<a href="{{ url_for('main.show_visit', visitid=visit.visitid) }}">Back</a>
+
+{% endblock %}

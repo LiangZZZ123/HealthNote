@@ -208,7 +208,7 @@ class Note(SearchableMixin, db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     endtag = db.Column(db.Boolean)
     lasteditor = db.Column(db.String(64))
-    lastedittime = db.Column(db.DateTime)
+    lastedittime = db.Column(db.DateTime, default=datetime.utcnow)
 
     caseid = db.Column(db.Integer, db.ForeignKey('case.caseid'))
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'))

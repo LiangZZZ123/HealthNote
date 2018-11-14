@@ -5,19 +5,23 @@
     <td>{{ note.timestamp }}</td>
     <td><b>{{ note.notetype.type }}</b></td>
 
-    <!-- action for edit, link to editnote.html -->
+    {%if note.endtag != True %}
+    <!-- action for edit, link to edit_note.html -->
     <!-- <td><a href="edit_note/{{note.noteid}}" class="#">Edit</a></td> -->
-    <td><a href="{{ url_for('main.edit_note', noteid=note.noteid) }}" class="#">Edit</a></td>
+    <td><a href="{{ url_for('main.edit_note', noteid=note.noteid) }}" class="#">Edit | </a></td>
+    <td><a href="{{ url_for('main.end_edit_note', noteid=note.noteid) }}" class="#">End Edit</a></td>
     <!-- action for delete, link to "delete_note(noteid)" method in routes.py by URL -->
+    {% endif %}
+    
     <td>
         <form action="{{ url_for('main.delete_note', noteid=note.noteid) }}" method="post">
             <input type="hidden" name="_method" value="DELETE">
             <input type="submit" value="Delete" class="#">
         </form>
     </td>
+    <div>Belongs to case: {{note.case.casename if note.case != None else "(Decide later)"}}</div>
     <div>{{ note.notetext }}</div>
-    {% if note.lasteditor != "" %}
-        <b>Last edited by {{ note.lasteditor|title}} at {{ note.lastedittime }}</b>
-    {% endif %}
+    <b>Last edited by {{ note.lasteditor|title}} at {{ note.lastedittime }}</b>
+  
 </tr>
 <hr>

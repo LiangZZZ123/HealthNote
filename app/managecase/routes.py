@@ -16,9 +16,8 @@ def managecase():
     form = SwitchCaseForm()
     form.case.choices = [(case.casename, case.casename) for case in current_group.cases.all()]
 
-
     return render_template('managecase.html', title='Manage Case', group=current_group,
-                cared=current_cared, form=form)
+             form=form)
 
 @bp.route('/addcase', methods=['GET', 'POST'])
 @login_required
@@ -59,9 +58,23 @@ def addcase():
     return render_template('addcase.html', title='Add Case', form=form)
 
 
+@bp.route('/endcase/<caseid>', methods=["GET", "POST"])
+@login_required
+def endcase(caseid):
+    case = Case.query.filter(Case.caseid == caseid).first()
+    case.endtag = True
+    case.endday = datetime.utcnow()
+    db.session.commit()
+    flash("This case has been ended !", 'success')
+    return redirect(url_for('managecase.managecase'))
 
 
+@bp.route('/showcase/<caseid>', methods=["GET", "POST"])
+@login_required
+def showcase(caseid):
+    case = Case.query.filter(Case.caseid == caseid).first()
 
+    return render_template('showcase.html', title='Explore this case', case=case)
 
 
 

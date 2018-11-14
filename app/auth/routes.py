@@ -32,6 +32,11 @@ def login():
             # need to serialize 'group' object before pass it as instance of Group object,
             # since dont know how to do that, just session pass groupname
             session['groupname'] = current_user.default_group().groupname
+            session['eldername'] = Group.query.filter(
+                Group.groupname == session['groupname']).first().get_admin().username
+            session['elderphoto'] = Group.query.filter(
+                Group.groupname == session['groupname']).first().get_admin().avatar(26)
+                
             next_page = url_for('main.group', groupname=session['groupname'])
         return redirect(next_page)
         

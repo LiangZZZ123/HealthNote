@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {%block content %}
-    <h1>Welcome to your Care Group</h1>
+    <h1>Welcome to {{ session['eldername']|title }}'s Care Group</h1>
 
     <!-- switchGroupForm  -->
   <form method="post">
@@ -13,13 +13,6 @@
   </form>
   <hr>
 
-  <!-- group admin (the cared) info -->
-  <p>Current group: <b>{{group.groupname}}</b></p>
-  <p>This group is for the service of: </p>
-  <img src="{{ cared.avatar(64)}}" />
-  <p>{{group.admin|title}}</p>
-  <hr>
-
   <!-- group member info -->
   <p>Group members:</p>
   {% for user in group.users | sort(attribute='username')%}
@@ -27,6 +20,23 @@
   {% endfor %}
   <hr>
 
+
+  <!-- add appointment / appointment info-->
+  <a href="{{ url_for('main.add_visit', groupname=session['groupname']) }}">Add new appointment</a><br>
+  <p>Current Appointments:</p>
+  {% for visit in group.visits | sort(attribute='date') %}
+  <td><a href="{{ url_for('main.show_visit', visitid=visit.visitid) }}">{{visit.date}}
+        {{visit.time}}| Dr. {{visit.case.doctors.first().doctorname|title}}|
+        Under CASE: {{visit.case.casename}}</a></td>
+  <td>
+      <form action="{{ url_for('main.delete_visit', visitid=visit.visitid) }}" method="post">
+          <input type="hidden" name="_method" value="DELETE">
+              <input type="submit" value="Delete" >
+      </form>
+  </td>
+  {% endfor %}
+
+  <hr>
 
   
   

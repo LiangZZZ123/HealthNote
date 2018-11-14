@@ -1,5 +1,5 @@
 <div>
-    HealthWeb |
+    HealthNote |
 
     <!-- is_anonymous = True only when the user is not logged in -->
     {% if current_user.is_anonymous %}
@@ -13,7 +13,11 @@
 
     <p>Current user: {{current_user.username|title}} <img src="{{ current_user.avatar(20)}}" /></p>
     
-
+    <!-- group admin (the cared) info -->
+    <p>Current group: <b>{{session['groupname']}}</b>
+        <img src="{{ session['elderphoto'] }}" /></p>
+    
+    <hr>
     
     {% endif %}
 </div>

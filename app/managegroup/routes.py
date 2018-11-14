@@ -91,9 +91,10 @@ def managegroup():
             flash(
                 'Please choose a group, and you cannot leave your default group', 'warning')
 
-    return render_template('managegroup.html', title='Manage Group', addUserForm=addUserForm,
-                           dropUserForm=dropUserForm, addGroupForm=addGroupForm, leaveGroupForm=leaveGroupForm,
-                           handleMessageForm=handleMessageForm)
+    return render_template('managegroup.html', title='Manage Group', group=session,
+        addUserForm=addUserForm, dropUserForm=dropUserForm,
+        addGroupForm=addGroupForm, leaveGroupForm=leaveGroupForm,
+        handleMessageForm=handleMessageForm)
 
 
 # if "Agree" button in managegroup is clicked
