@@ -1,56 +1,76 @@
 {% extends "layout.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{%block content %}
-    <h1>Welcome to {{ session['eldername']|title }}'s Care Group</h1>
+{% block content %}
+<h1>Welcome to {{ session["eldername"] | title }}'s Care Group</h1>
 
-    <!-- switchGroupForm  -->
-  <form method="post">
-    {{ switchGroupForm.hidden_tag() }}
-    {{ switchGroupForm.group.label }}
-    {{ switchGroupForm.group}}
-    {{ switchGroupForm.submit() }}
+
+<!-- switchGroupForm -->
+<form method="post">
+  {{ switchGroupForm.hidden_tag() }}
+  {{ switchGroupForm.groupname.label }}
+  {{ switchGroupForm.groupname }}
+  {{ switchGroupForm.submitSwitchGroup() }}
+</form>
+<hr />
+
+
+<!-- group member info -->
+<h3>Group members:</h3>
+{% for user in group.users | sort(attribute='username')%}
+<p>
+  <a href="{{ url_for('main.show_user', username=user.username) }}">
+    <img src="{{ user.avatar(32)}}" /></a>
+  {{ user.username | title }}
+</p>
+{% endfor %}
+<hr />
+
+
+<!-- add finished tasks  / show all finished cases -->
+<h3>Recording For finished tasks:</h3>
+<a href="{{ url_for('main.add_task') }}">Click to record recently finished tasks</a>
+  {% for task in tasklist| sort(attribute='timestamp', reverse=True) %}
+    <p>{{ task.tasktext }} {{ task.timestamp }}</p>
+  {% endfor %}
+<hr>
+
+
+<!-- add appointment / show all appointments -->
+<h3>Current Appointments:</h3>
+<a href="{{ url_for('main.add_visit') }}">Add new appointment</a><br />
+
+{% for visit in group.visits | sort(attribute='date', reverse=True) %}
+<td>
+  <a href="{{ url_for('main.show_visit', visitid=visit.visitid) }}">{{ visit.date }} {{ visit.time }}| Dr.
+    {{ visit.case.doctors.first().doctorname | title }}| Under CASE:
+    {{ visit.case.casename }}</a>
+</td>
+<td>
+  <form action="{{ url_for('main.delete_visit', visitid=visit.visitid) }}" method="post">
+    <input type="hidden" name="_method" value="DELETE" />
+    <input type="submit" value="Delete" />
   </form>
-  <hr>
+</td>
+{% endfor %}
 
-  <!-- group member info -->
-  <p>Group members:</p>
-  {% for user in group.users | sort(attribute='username')%}
-    <p><img src="{{ user.avatar(32) }}"> {{user.username|title}}</p>
-  {% endfor %}
-  <hr>
+<hr />
 
+<!--
+  -------------------------------------------------------------------------------------
+-->
+<!-- addNoteForm -->
+<!--
+  你看看能不能对wtf quick_form 的模板直接进行修改，不行的话用更下面的那一段
+-->
+<h3>Add new note below:</h3>
+<div class="row">
+  <div class="col-md-4">{{ wtf.quick_form(addNoteForm) }}</div>
+</div>
+<hr />
 
-  <!-- add appointment / appointment info-->
-  <a href="{{ url_for('main.add_visit', groupname=session['groupname']) }}">Add new appointment</a><br>
-  <p>Current Appointments:</p>
-  {% for visit in group.visits | sort(attribute='date') %}
-  <td><a href="{{ url_for('main.show_visit', visitid=visit.visitid) }}">{{visit.date}}
-        {{visit.time}}| Dr. {{visit.case.doctors.first().doctorname|title}}|
-        Under CASE: {{visit.case.casename}}</a></td>
-  <td>
-      <form action="{{ url_for('main.delete_visit', visitid=visit.visitid) }}" method="post">
-          <input type="hidden" name="_method" value="DELETE">
-              <input type="submit" value="Delete" >
-      </form>
-  </td>
-  {% endfor %}
-
-  <hr>
-
-  
-  
-  <!-- ------------------------------------------------------------------------------------- -->
-  <!-- addNoteForm -->
-  <!-- 你看看能不能对wtf quick_form 的模板直接进行修改，不行的话用更下面的那一段   -->
-  <div class="row">
-    <div class="col-md-4">
-      {{ wtf.quick_form(addNoteForm) }}
-    </div>
-  </div>
-  <hr>
- 
-  <!-- <form action="" method="post">
+<!--
+  <form action="" method="post">
     {{ addNoteForm.hidden_tag() }}
     {{ addNoteForm.notetype.label}}
     {{ addNoteForm.notetype }}
@@ -61,20 +81,24 @@
     {% for error in addNoteForm.notetext.errors %}
         <span style="color: red;">[{{ error }}]</span>
         {% endfor %}
-    {{ addNoteForm.submit() }}
+    {{ addNoteForm.submitAddNote() }}
   </form>
-  <hr> -->
-<!-- ------------------------------------------------------------------------------ -->
-
-
-<!-- show filtered notes -->
-  {% if notes is not none %}
-    {% for note in notes %}
-      {% include 'includes/_note.html' %}
-    {% endfor %}
-  {% else %}
-    <p>No notes here!</p>
-  {% endif %}
   <hr>
+-->
 
-  {% endblock %}
+<!--
+  ------------------------------------------------------------------------------
+-->
+
+<!-- show all notes -->
+<h3>Show notes of this group below:</h3>
+{% if group.notes.first() is not none %} 
+  {% for note in group.notes %} 
+    {% include'includes/_note.html' %} 
+  {% endfor %} 
+{% else %}
+  <p>No notes here!</p>
+{% endif %}
+<hr />
+
+{% endblock %}

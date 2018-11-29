@@ -17,8 +17,10 @@ def managegroup():
     leaveGroupForm = LeaveGroupForm()
     addGroupForm = AddGroupForm()
 
-    dropUserForm.dropuser.choices = [
-        (user.username, user.username) for user in current_user.users_in_mygroup().all()]
+    if current_user.usertype == "elderly":
+        dropUserForm.dropuser.choices = [
+            (user.username, user.username) for user in current_user.users_in_mygroup().all()]
+    
     leaveGroupForm.leavegroup.choices = [
         (group.groupname, group.groupname) for group in current_user.in_groups().all()]
 

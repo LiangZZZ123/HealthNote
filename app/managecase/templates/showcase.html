@@ -3,8 +3,51 @@
 {% block content%}
 <h1>Below are the details of case <b>{{case.casename}}</b></h1>
 
+<h3>General info</h3> 
+<a href="{{ url_for('managecase.editcase', caseid=case.caseid) }}">Edit</a>
+<p><b>Case Name: {{ case.casename }}</b></p>
+<p>Chronic Condition Tags:
+    {% for condition in case.conditions %}
+    {{ condition.conditiontext }} |
+    {% endfor %}
+</p>
+<p>Doctor Name: {{ case.doctors.first().doctorname }}</p>
+<p>Start at: {{ case.startday }}</p>
+<p>End at: {{ case.endday if case.endday != none else "Still in process" }}</p>
+<hr>
+
+
+<h3>Case Diary</h3>
+<a href="{{ url_for('managecase.editdiary', caseid=case.caseid) }}">Edit</a>
+<p>{{ case.casetext }}</p>
+<hr>
+
+
+<h3>Case Goals</h3>
+<a href="{{ url_for('managecase.addgoal', caseid=case.caseid) }}">Add new goal</a>
+{% for goal in case.goals %}
+    <p>{{ goal.goaltext }}
+        <font size='1'>
+            <br>Goal type: {{ goal.goaltype.type }} | 
+            Goal set at: {{ goal.starttime }}<br>
+        </font>
+    </p>
+
+    <p>
+        <form action="{{ url_for('managecase.delete_goal', caseid=case.caseid, goalid=goal.goalid) }}" method="post">
+            <input type="hidden" name="_method" value="DELETE" />
+            <input type="submit" value="Delete" />
+        </form>
+    </p>
+    {% else %}
+    <p>No goal set for this case!</p>
+{% endfor %}
+<hr>
+
+
 <h3>Doctor</h3>
 {% for doctor in case.doctors %}
+    <a href="{{ url_for('managecase.editdoctor', caseid=case.caseid, doctorid=doctor.doctorid)}}">Edit</a>
     <p>Doctor name: {{ doctor.doctorname|title }}</p>
     <p>Phone: {{ doctor.phone }}</p>
     <p>Speciality: {{ doctor.specialty }}</p>
@@ -12,10 +55,29 @@
     <p>Addr1: {{ doctor.address1 }}</p>
     <p>Addr2: {{ doctor.address2 }}</p>
     <p>City: {{ doctor.city }}</p>
-    <p>zipcode: {{ doctor.zipcode }}</p>
-    
-    <a href="#">Edit</a>
+    <p>zipcode: {{ doctor.zipcode }}</p>    
     <hr>
+{% endfor %}
+<hr>
+
+
+<h3>Finished tasks:</h3>
+{% for task in case.tasks | sort(attribute='timestamp', reverse=True) %}
+    <p>{{ task.tasktext }} {{ task.timestamp }}</p>
+{% else %}
+    <p>No tasks recorded for this case!</p>
+{% endfor %}
+<hr>
+
+
+<h3>Appointments</h3>
+{% for visit in case.visits | sort(attribute='date') %}
+    <p>Date: {{ visit.date }}; Time: {{ visit.time }}</p>
+    <p>Doctor: DR. {{ case.doctors.first().doctorname }}</p>
+    <p>Memo: {{ visit.visittext }}</p>
+    <hr>
+{% else %}
+    <p>No appointment created for this case!</p>
 {% endfor %}
 <hr>
 
@@ -25,16 +87,6 @@
     {% include 'includes/_note.html' %}
 {% else %}
     <p>No notes assigned for this case!</p>
-{% endfor %}
-<hr>
-
-
-<h3>Appointments</h3>
-{% for visit in case.visits | sort(attribute='date') %}
-    <p>Date: {{ visit.date }}; Time: {{ visit.time }}</p>
-    <p>Memo: {{ visit.visittext }}</p>
-    <hr>
-
 {% endfor %}
 <hr>
 

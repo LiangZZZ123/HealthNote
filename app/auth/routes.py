@@ -14,7 +14,7 @@ def login():
 
     current_app.logger.info('here')
     if current_user.is_authenticated:
-        return redirect(url_for('main.group', groupname=current_user.default_group().groupname))
+        return redirect(redirect(url_for('auth.login')))
     form = LoginForm()
     if form.validate_on_submit():
         # first() return the user object if exists, or return None, compare to all()
@@ -29,15 +29,7 @@ def login():
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             flash('You have logged in', 'success')
-            # need to serialize 'group' object before pass it as instance of Group object,
-            # since dont know how to do that, just session pass groupname
-            session['groupname'] = current_user.default_group().groupname
-            session['eldername'] = Group.query.filter(
-                Group.groupname == session['groupname']).first().get_admin().username
-            session['elderphoto'] = Group.query.filter(
-                Group.groupname == session['groupname']).first().get_admin().avatar(26)
-                
-            next_page = url_for('main.group', groupname=session['groupname'])
+            next_page = url_for('main.select_group')
         return redirect(next_page)
         
     return render_template('login.html', title='Login', form=form)
@@ -59,23 +51,24 @@ def register():
         user = User(username=form.username.data.lower(), email=form.email.data,
                     usertype=form.usertype.data)
         user.set_password(form.password.data)
-
-        # auto-generate group when new user registered
-        group = Group(groupname="Group-"+form.username.data.lower(),
-                      admin=form.username.data)
-
         db.session.add(user)
-        db.session.add(group)
         db.session.commit()
 
-        # let the registered user join his own gorup
-        myuser = User.query.filter(User.username == form.username.data).first()
-        mygroup = Group.query.filter(Group.admin == form.username.data).first()
-        myuser.join_group(mygroup)
-        db.session.commit()
+        # auto-generate group when a new elderly user registered
+        if form.usertype.data == "elderly":
+            group = Group(groupname="Group-"+form.username.data.lower(),
+                          elder=form.username.data, admin=form.username.data)
+            db.session.add(group)
 
-        flash('Registration succeeded, please login now!', 'success')
+            # let the registered elderly join his own gorup
+            myuser = User.query.filter(User.username == form.username.data).first()
+            mygroup = Group.query.filter(Group.admin == form.username.data).first()
+            myuser.join_group(mygroup)
+            db.session.commit()
+            
+        flash('Welcome new user, please login now!', 'success')
         return redirect(url_for('auth.login'))
+
     return render_template('register.html', title='Register', form=form)
 
 

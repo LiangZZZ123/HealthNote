@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content%}
+
+<form method="post">
+    {{ switchGroupForm.hidden_tag() }}
+    <p>Choose an elderly's group to work on: </p>
+    {{ switchGroupForm.groupname }}
+    {{ switchGroupForm.submitSwitchGroup() }}
+</form>
+<hr />
+
+<p>New family member/ health aide ? 
+    <a href="{{ url_for('managegroup.managegroup') }}">Join an elderly's group</a></p>
+
+
+{% endblock %}

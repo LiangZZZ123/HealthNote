@@ -8,32 +8,21 @@
 
 {% else %}
     <h1>Manage cases of {{ session['eldername']|title }}s' group below:</h1>
-
-    <p>When you create a case, you are not necessary to add all doctor info(only doctor name is needed).</p>
-    <p>You can complete the rest info after determining which doctor will take your case</p>
-
     <hr>
+    
     <a href="{{ url_for('managecase.addcase') }}">Create a new case</a>
     <hr>
 
     {% for case in group.cases %}
-        <!-- <b>Case Name:{{ case.casename }}</b>
-        {{ case.doctors.first().doctorname }}
-        {% for condition in case.conditions %}
-            {{ condition.conditiontext }}
-        {% endfor %}
-        <a href="#">  Edit this case  </a>
-        <a href="#">  End this case  </a> -->
-
         <p><b>Case Name: {{ case.casename }}</b></p>
+        <p>Chronic Condition Tags:
+            {% for condition in case.conditions %}
+                {{ condition.conditiontext }} |
+            {% endfor %}
+        </p>
         <p>Doctor Name: {{ case.doctors.first().doctorname }}</p>
         <p>Start at: {{ case.startday }}</p>
         <p>End at: {{ case.endday if case.endday != none else "Still in process" }}</p>
-        <p>Chronic Condition Tags:
-            {% for condition in case.conditions %}
-                {{ condition.conditiontext }}
-            {% endfor %}
-        </p>
         <p><a href="{{ url_for('managecase.showcase', caseid=case.caseid) }}">  Explore details  </a></p>
         
         {% if case.endtag == False %}

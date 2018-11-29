@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: da31f48cbcdd
+Revision ID: 283a12e0ccab
 Revises: 
-Create Date: 2018-11-05 21:17:38.280624
+Create Date: 2018-11-29 01:29:40.518674
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'da31f48cbcdd'
+revision = '283a12e0ccab'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,13 +23,19 @@ def upgrade():
     sa.Column('conditiontext', sa.String(length=128), nullable=True),
     sa.PrimaryKeyConstraint('conditionid')
     )
+    op.create_table('goaltype',
+    sa.Column('goaltypeid', sa.Integer(), nullable=False),
+    sa.Column('type', sa.String(length=64), nullable=True),
+    sa.PrimaryKeyConstraint('goaltypeid')
+    )
     op.create_table('group',
     sa.Column('groupid', sa.Integer(), nullable=False),
     sa.Column('groupname', sa.String(length=64), nullable=True),
+    sa.Column('elder', sa.String(length=64), nullable=True),
     sa.Column('admin', sa.String(length=64), nullable=True),
     sa.PrimaryKeyConstraint('groupid')
     )
-    op.create_index(op.f('ix_group_admin'), 'group', ['admin'], unique=True)
+    op.create_index(op.f('ix_group_elder'), 'group', ['elder'], unique=True)
     op.create_index(op.f('ix_group_groupname'), 'group', ['groupname'], unique=True)
     op.create_table('notetype',
     sa.Column('notetypeid', sa.Integer(), nullable=False),
@@ -78,8 +84,8 @@ def upgrade():
     )
     op.create_table('task',
     sa.Column('taskid', sa.Integer(), nullable=False),
+    sa.Column('tasktext', sa.String(length=256), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.Column('tasktext', sa.String(length=128), nullable=True),
     sa.Column('userid', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['userid'], ['user.userid'], ),
     sa.PrimaryKeyConstraint('taskid')
@@ -114,6 +120,17 @@ def upgrade():
     sa.PrimaryKeyConstraint('doctorid')
     )
     op.create_index(op.f('ix_doctor_doctorname'), 'doctor', ['doctorname'], unique=True)
+    op.create_table('goal',
+    sa.Column('goalid', sa.Integer(), nullable=False),
+    sa.Column('goaltext', sa.String(length=256), nullable=True),
+    sa.Column('starttime', sa.DateTime(), nullable=True),
+    sa.Column('caseid', sa.Integer(), nullable=True),
+    sa.Column('goaltypeid', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['caseid'], ['case.caseid'], ),
+    sa.ForeignKeyConstraint(['goaltypeid'], ['goaltype.goaltypeid'], ),
+    sa.PrimaryKeyConstraint('goalid')
+    )
+    op.create_index(op.f('ix_goal_starttime'), 'goal', ['starttime'], unique=False)
     op.create_table('note',
     sa.Column('noteid', sa.Integer(), nullable=False),
     sa.Column('notetext', sa.String(length=2048), nullable=True),
@@ -151,6 +168,8 @@ def downgrade():
     op.drop_table('visit')
     op.drop_index(op.f('ix_note_timestamp'), table_name='note')
     op.drop_table('note')
+    op.drop_index(op.f('ix_goal_starttime'), table_name='goal')
+    op.drop_table('goal')
     op.drop_index(op.f('ix_doctor_doctorname'), table_name='doctor')
     op.drop_table('doctor')
     op.drop_table('case_has_task')
@@ -168,7 +187,8 @@ def downgrade():
     op.drop_table('user')
     op.drop_table('notetype')
     op.drop_index(op.f('ix_group_groupname'), table_name='group')
-    op.drop_index(op.f('ix_group_admin'), table_name='group')
+    op.drop_index(op.f('ix_group_elder'), table_name='group')
     op.drop_table('group')
+    op.drop_table('goaltype')
     op.drop_table('condition')
     # ### end Alembic commands ###

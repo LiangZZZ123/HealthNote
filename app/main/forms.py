@@ -1,6 +1,6 @@
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import Form, StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField
+from wtforms import Form, StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField, TextAreaField, SelectMultipleField, DateTimeField
 from wtforms_components import TimeField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
 from app.models import User
@@ -12,18 +12,18 @@ def myvalidate(form, field):
 
 
 class SwitchGroupForm(FlaskForm):
-    group = SelectField("Switch group(default is your own's)",
-                        validators=[DataRequired()], choices=[])
-    submit = SubmitField('Confirm')
+    groupname = SelectField("Switch group: ",
+                        validators=[DataRequired(), myvalidate], choices=[], default='--')
+    submitSwitchGroup = SubmitField('Confirm')
 
 
 class AddNoteForm(FlaskForm):
-    notetype = SelectField('Nature of note',  validators=[DataRequired(), myvalidate],
+    notetype = SelectField('Nature of note', validators=[DataRequired(), myvalidate],
                            choices=[], default='--')
     casename = SelectField('Link this note to a CASE',  validators=[DataRequired(), myvalidate],
                            choices=[], default='(Decide later)')
     notetext = TextAreaField('Text of note', validators=[Length(min=1)])
-    submit = SubmitField('Confirm')
+    submitAddNote = SubmitField('Confirm')
 
 
 class VisitForm(FlaskForm):
@@ -31,22 +31,14 @@ class VisitForm(FlaskForm):
                            choices=[], default='--')
     date = DateField("Appointment date(format: 2018-01-01)")
     time = TimeField("Appointment time(format: 7:30 AM)")
-    visittext= StringField("Memo")
+    visittext = TextAreaField("Memo(Maximum 500 chars)", validators=[Length(max=500)])
     submit = SubmitField('Confirm')
 
 
-# class DoctorForm(FlaskForm):
-#     doctorname = StringField("Doctor name", validators=[
-#                              DataRequired(), Length(max=20)])
-#     phone = StringField("Phone", validators=[Length(min=10, max=10)])
-#     specialty = StringField("Specialty", validators=[
-#                             DataRequired(), Length(max=64)])
-#     officename = StringField("Office name", validators=[
-#                              DataRequired(), Length(max=64)])
-#     address1 = StringField("Address1", validators=[
-#                            DataRequired(), Length(max=128)])
-#     address2 = StringField("Address2", validators=[
-#                            DataRequired(), Length(max=64)])
-#     city = StringField("City", validators=[DataRequired(), Length(max=30)])
-#     zipcode = StringField("Zip", validators=[Length(min=5, max=5)])
-#     submit = SubmitField('Confirm')
+class TaskForm(FlaskForm):
+    # "casename" field is for linking one task to multiple cases
+    casename = SelectMultipleField(
+        "Select cases that this task should be linked to(Press CTRL for multi-selection)",
+        validators=[DataRequired(), myvalidate], choices=[], default='--')
+    tasktext = TextAreaField("Describe this task you've just done(Maximum 250 chars)", validators=[Length(max=250)])
+    submit = SubmitField('Confirm')

@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content%}
+
+<h1>Edit the info of this doctor below below:</h1>
+<div class="row">
+    <div class="col-md-4">
+        {{ wtf.quick_form(form) }}
+    </div>
+</div>
+
+<a href="{{ url_for('managecase.showcase', caseid=caseid) }}">Back</a>
+
+{% endblock %}

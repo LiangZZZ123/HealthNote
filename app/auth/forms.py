@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import Form, StringField, PasswordField, BooleanField, SubmitField, SelectField, TextAreaField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, Length
+from wtforms.validators import ValidationError, DataRequired, InputRequired, Email, EqualTo, Length
 from app.models import User
 
 
@@ -20,10 +20,10 @@ class LoginForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(),Length(max=32)])
-    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=64)])
     usertype = SelectField('UserType',  validators=[DataRequired(),myvalidate], 
                 choices=[('--', '--'), ('elderly', 'elderly'), ('family member', 'family member'),
-                ('home health aid','home health aid')], default='--')
+                ('home health aide','home health aide')], default='--')
     password = PasswordField('Password', validators=[DataRequired(), Length(max=20)])
     password2 = PasswordField(
         'Repeat Password', validators=[DataRequired(), EqualTo('password')])
@@ -33,12 +33,12 @@ class RegistrationForm(FlaskForm):
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
-            raise ValidationError('Please use a different username.')
+            raise ValidationError('User name exists, please use a different username.')
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
-            raise ValidationError('Please use a different email address.')
+            raise ValidationError('Email address exists, please use a different email address.')
 
 
 class ResetPasswordRequestForm(FlaskForm):

@@ -1,25 +1,47 @@
 <div>
     HealthNote |
 
-    <!-- is_anonymous = True only when the user is not logged in -->
+    <!-- "is_anonymous = True" only when the user is not logged in -->
     {% if current_user.is_anonymous %}
-    Please login below
-    {% else %}
-    <!-- //everytime back to 'group' page, will show the default group info, not good -->
-    <a href="{{ url_for('main.group', groupname=session['groupname']) }}"> CareGroup </a>
-    <a href="{{ url_for('managecase.managecase') }}"> CaseManagement </a>
-    <a href="{{ url_for('managegroup.managegroup') }}"> GroupManagement </a>
-    <a href="{{ url_for('auth.logout') }}"> Logout </a>
+        Please login below
+        <hr>
 
-    <p>Current user: {{current_user.username|title}} <img src="{{ current_user.avatar(20)}}" /></p>
-    
-    <!-- group admin (the cared) info -->
-    <p>Current group: <b>{{session['groupname']}}</b>
-        <img src="{{ session['elderphoto'] }}" /></p>
-    
-    <hr>
-    
+    <!-- before choosing any group to work on -->
+    {% elif not session.get('groupname') %}
+        <a href="{{ url_for('main.select_group') }}"> SelectGroup </a>
+        <a href="{{ url_for('managegroup.managegroup') }}"> GroupManagement </a>
+        <a href="{{ url_for('auth.logout') }}"> Logout </a>
+        <br>
+        
+        Current user: {{current_user.username|title}}
+        <a href="{{ url_for('main.show_user', username=current_user.username) }}">
+            <img src="{{ current_user.avatar(20)}}" /></a>
+        <hr>
+
+    <!-- after choosing a group -->
+    {% else %}
+        <!-- //everytime back to 'group' page, will show the default group info, not good -->
+        <a href="{{ url_for('main.group', groupname=session['groupname']) }}"> CareGroup </a>
+        <a href="{{ url_for('managecase.managecase') }}"> CaseManagement </a>
+        <a href="{{ url_for('managegroup.managegroup') }}"> GroupManagement </a>
+        <a href="{{ url_for('auth.logout') }}"> Logout </a>
+        <br>
+
+        Current user: {{current_user.username|title}} 
+            <a href="{{ url_for('main.show_user', username=current_user.username) }}">
+                <img src="{{ current_user.avatar(20)}}" /></a>
+        <br>
+        <!-- The groupname, the elder and the admin of this group -->
+        Current group: <b>{{session['groupname']|title}}</b>
+        <br>
+        Elder of this group: <b>{{session['eldername']|title}}</b>
+            <a href="{{ url_for('main.show_user', username=session['eldername']) }}">
+                <img src="{{ session['elderphoto'] }}" /></a>
+        <br>
+        Group admin: <b>{{session['adminname']|title}}</b>
+            <a href="{{ url_for('main.show_user', username=session['adminname']) }}">
+                <img src="{{ session['adminphoto'] }}" /></a>
+        <hr>
+
     {% endif %}
 </div>
-<!-- a horizontal break line -->
-<hr>

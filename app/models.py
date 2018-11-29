@@ -131,7 +131,7 @@ class User(UserMixin, db.Model):
     # return the default group of current_user
     def default_group(self):
         group_default = (Group.query.filter(
-            Group.admin == self.username).first())
+            Group.elder == self.username).first())
         return group_default
 
     # since all join_group is invited by admin, so no need to check if_ingroup first
@@ -173,7 +173,8 @@ class Group(db.Model):
     __tablename__ = 'group'
     groupid = db.Column(db.Integer, primary_key=True)
     groupname = db.Column(db.String(64), index=True, unique=True)
-    admin = db.Column(db.String(64), index=True, unique=True)
+    elder = db.Column(db.String(64), index=True, unique=True)
+    admin = db.Column(db.String(64))
     # many-many with class User
     users = db.relationship('User', secondary=group_has_user,
                             back_populates='groups', lazy='dynamic')
@@ -195,9 +196,14 @@ class Group(db.Model):
         if self.isjoined_user(user):
             self.users.remove(user)
 
+    def get_elder(self):
+        elder = User.query.filter(self.elder == User.username).first()
+        return(elder)
+
     def get_admin(self):
         admin = User.query.filter(self.admin == User.username).first()
         return(admin)
+
 
 
 class Note(SearchableMixin, db.Model):
@@ -225,7 +231,7 @@ class NoteType(db.Model):
     notetypeid = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(128))
 
-    notes = db.relationship('Note', back_populates='notetype')
+    notes = db.relationship('Note', back_populates='notetype', lazy='dynamic')
 
 
 class Visit(db.Model):
@@ -292,16 +298,18 @@ class Case(db.Model):
 
     group = db.relationship('Group', back_populates='cases')
 
-    # one-many with class Visit,Doctor,Note
+    # one-many with class Visit,Doctor,Note,Goal
     visits = db.relationship('Visit', back_populates='case', lazy='dynamic')
     doctors = db.relationship('Doctor', back_populates='case', lazy='dynamic')
     notes = db.relationship('Note', back_populates='case', lazy='dynamic')
+    goals = db.relationship('Goal', back_populates='case', lazy='dynamic')
 
     # many-many with class Condition, Task
     conditions = db.relationship('Condition', secondary=case_has_condition, 
                                 back_populates="cases", lazy='dynamic')
     tasks = db.relationship('Task', secondary=case_has_task, 
                                 back_populates="cases", lazy='dynamic')
+                                
 
 
 class Condition(db.Model):
@@ -317,10 +325,10 @@ class Condition(db.Model):
 class Task(db.Model):
     __tablename__ = 'task'
     taskid = db.Column(db.Integer, primary_key=True)
+    tasktext = db.Column(db.String(256))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    tasktext = db.Column(db.String(128))
 
-    # one-many with class User
+    # many-one with class User
     userid = db.Column(db.Integer, db.ForeignKey('user.userid'))
 
     user = db.relationship('User', back_populates='tasks')
@@ -329,3 +337,24 @@ class Task(db.Model):
     cases = db.relationship('Case', secondary=case_has_task,
                             back_populates="tasks", lazy='dynamic')
 
+
+class Goal(db.Model):
+    __tablename__ = 'goal'
+    goalid = db.Column(db.Integer, primary_key=True)
+    goaltext = db.Column(db.String(256))
+    starttime = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    # many-one with class Case, GoalType
+    caseid = db.Column(db.Integer, db.ForeignKey('case.caseid'))
+    goaltypeid = db.Column(db.Integer, db.ForeignKey('goaltype.goaltypeid'))
+    
+    case = db.relationship('Case', back_populates='goals')
+    goaltype = db.relationship('GoalType', back_populates='goals')
+
+
+class GoalType(db.Model):
+    __tablename__ = 'goaltype'
+    goaltypeid = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(64))
+
+    goals = db.relationship('Goal', back_populates='goaltype', lazy='dynamic')

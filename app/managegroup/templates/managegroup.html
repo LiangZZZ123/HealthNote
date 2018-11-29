@@ -2,13 +2,13 @@
 
 {% block content %}
 <div>
-    <h1>Manage your DEFAULT group below:</h1>
-    <p>Group is the core role of our service, every one has his DEFAULT group upon registration.</p>
-    <P>As an elderly, the default group will be the group you work with,
+    <h1>Manage your groups below:</h1>
+    <p>Group is the core role of our service, only an ELDERLY has his/her DEFAULT group upon registration.</p>
+    <P>As an elderly, the DEFAULT group will be the group you work with,
         you can add/delete your group members here. Once add a member, you grant
         him/her the right to scheduling appointment and leaving notes for you.</p>
     <P>As a family member/health aide, you have to be added to the elderly's group first, you are granted
-        to switch between different groups, make appointme defaultnt, and leave notes for the elderly.</P>
+        to switch between different groups, make appointments, and leave notes for the elderly.</P>
     <hr>
 
     <p>Messages of Group Management show below:</p>
@@ -28,23 +28,26 @@
         <p><b>No new message to process!</b></p>
     {% endif %}
     <hr>
+    
+    
+    {% if current_user.usertype == "elderly" %}
+        <form action="" method="post">
+            {{ addUserForm.hidden_tag() }}
+            {{ addUserForm.adduser.label }}<br>
+            {{ addUserForm.adduser }}<br>
 
-    <form action="" method="post">
-        {{ addUserForm.hidden_tag() }}
-        {{ addUserForm.adduser.label }}<br>
-        {{ addUserForm.adduser }}<br>
+            {{ addUserForm.submit() }}
+        </form>
 
-        {{ addUserForm.submit() }}
-    </form>
+        <form action="" method="post">
+            {{ dropUserForm.hidden_tag()}}
+            {{ dropUserForm.dropuser.label }}<br>
+            {{ dropUserForm.dropuser }}<br>
 
-    <form action="" method="post">
-        {{ dropUserForm.hidden_tag()}}
-        {{ dropUserForm.dropuser.label }}<br>
-        {{ dropUserForm.dropuser }}<br>
-
-        {{ dropUserForm.submit() }}
-    </form>
-    <hr>
+            {{ dropUserForm.submit() }}
+        </form>
+        <hr>
+    {% endif %}
 
     <form action="" method="post">
         {{ addGroupForm.hidden_tag() }}
@@ -54,13 +57,15 @@
         {{ addGroupForm.submit() }}
     </form>
 
-    <form action="" method="post">
-        {{ dropUserForm.hidden_tag()}}
-        {{ leaveGroupForm.leavegroup.label }}<br>
-        {{ leaveGroupForm.leavegroup }}<br>
+    {% if current_user.groups.first() is not none %}
+        <form action="" method="post">
+            {{ dropUserForm.hidden_tag()}}
+            {{ leaveGroupForm.leavegroup.label }}<br>
+            {{ leaveGroupForm.leavegroup }}<br>
 
-        {{ leaveGroupForm.submit() }}
-    </form>
+            {{ leaveGroupForm.submit() }}
+        </form>
+    {% endif %}
 
 </div>
 

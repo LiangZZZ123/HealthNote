@@ -4,7 +4,7 @@ from app.email import send_email
 
 def send_password_reset_email(user):
     token = user.get_reset_password_token()
-    send_email('[Microblog] Reset Your Password',
+    send_email('[HealthNote] Reset Your Password',
                sender=current_app.config['ADMINS'][0],
                recipients=[user.email],
                text_body=render_template('reset_password.txt',

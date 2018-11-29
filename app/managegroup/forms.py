@@ -10,7 +10,6 @@ def myvalidate(form, field):
 
 
 class HandleMessageForm(FlaskForm):
-    # message = StringField()
     agree = SubmitField('Agree')
     disagree = SubmitField('disAgree')
 

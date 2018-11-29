@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+
+<h1>User info of <b>{{user.username|title}}</b></h1>
+
+<div>Under construction...</div>
+
+{% if session.get('groupname') %}
+    <a href="{{ url_for('main.group', groupname=session['groupname']) }}">Back</a>
+{% else %}
+    <a href="{{ url_for('main.select_group') }}">Back</a>
+{% endif %}
+
+{% endblock %}
