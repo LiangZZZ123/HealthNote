@@ -88,7 +88,10 @@ def managegroup():
             db.session.commit()
             flash(
                 f'You have successfully left group {leaveGroupForm.leavegroup.data}', 'success')
-            return redirect(url_for("managegroup.managegroup"))
+            if (session['groupname'] == groupToLeave.groupname):
+                return redirect(url_for("main.select_group"))
+            else:
+                return redirect(url_for("managegroup.managegroup"))
         else:
             flash(
                 'Please choose a group, and you cannot leave your default group', 'warning')

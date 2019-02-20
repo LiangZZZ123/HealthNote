@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, logging, g, current_app
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, desc
 from datetime import datetime
 
 from app import db
@@ -68,6 +68,7 @@ def select_group():
 def group(groupname):
     # define the current group(obj)
     current_group = Group.query.filter(Group.groupname == session['groupname']).first()
+
     
     # SWITCH GROUP in main page
     switchGroupForm = SwitchGroupForm()
@@ -273,10 +274,9 @@ def add_task():
         timestamp = datetime.utcnow()
         task = Task(tasktext=form.tasktext.data, timestamp=timestamp, user=current_user)
         db.session.add(task)
-        # db.session.commit()
-
-        thistask = Task.query.filter(Task.timestamp >= timestamp-1).first()
-
+        
+        # find the most recent added task, and link it to selected cases
+        thistask = Task.query.order_by(Task.taskid.desc()).first()
         for c in form.casename.data:
             # "c" is the name of the case that will be link to "thistask"
             # "tag" is the Case instance with "tag.casename == c"
